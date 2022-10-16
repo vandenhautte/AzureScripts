@@ -1,0 +1,53 @@
+    # parameters
+    Param 
+    (   [Parameter(Mandatory=$true)]   
+        [String] 
+        $ResourceGroupName, 
+        [Parameter(Mandatory=$true)]   
+        [String]   
+        $VMName,  
+        [Parameter(Mandatory=$true)]   
+        [String]   
+        $Action 
+    ) 
+
+#Connect to Azure
+Write-Output "Connecting to Azure"
+Connect-AzAccount -Identity -AccountId '<ManagedIdentityClientID>'
+
+#Start script
+ write-host " Searching for VM Resources ..."  
+        Get-AzResource | where {$_.ResourceType -eq "Microsoft.Compute/VirtualMachines"} | ForEach-Object { 
+             
+            if($_.Name -eq $VMName) { 
+                $vm = Get-AzVM -ResourceGroupName $_.ResourceGroupName -Name $VMName 
+                if($vm) 
+                { 
+                    Write-Output "`t`t VM: '$($vm.Name)' not found." 
+                    $status = (Get-AzVM -ResourceGroupName $ResourceGroupName -VMName $VMName -Status).Statuses[1].Displaystatus
+                    if($Action -eq "Stop"){ 
+                        Write-Output "`t`t`t Stop VM: '$($vm.Name)' ..."  
+                        if($status -eq "VM running"){
+                            $vm | Stop-AzVM -Force 
+                        }
+                        else{
+                            Write-Output "`t`t`t VM:'$($vm.Name)'already stopped ..."
+                        }
+                    } 
+                    elseif($Action
+                    -eq "Start"){ 
+                        Write-Output "`t`t`t Start VM:'$($vm.Name)' ..."               
+                        if($status -eq "VM deallocated"){
+                            $vm | Start-AzVM 
+                        }
+                        else{
+                            Write-Output "`t`t`t VM:'$($vm.Name)' already started ..."
+                        }
+                    } 
+                } 
+                else 
+                { 
+                    Write-Output "`t`t VM: '$($vm.Name)' not found!"
+                } 
+            } 
+        } 
