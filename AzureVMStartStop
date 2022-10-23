@@ -11,11 +11,11 @@
         $Action 
     ) 
 
-#Connect to Azure
+# Connect to Azure
 Write-Output "Connecting to Azure"
-Connect-AzAccount -Identity -AccountId '<ManagedIdentityClientID>'
+Connect-AzAccount -Identity -AccountId '<Subscription>' -AccountId '<ManagedIdentityClientID>'
 
-#Start script
+# Script
  write-host " Searching for VM Resources ..."  
         Get-AzResource | where {$_.ResourceType -eq "Microsoft.Compute/VirtualMachines"} | ForEach-Object { 
              
